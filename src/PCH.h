@@ -1,5 +1,8 @@
 #pragma once
 
+// Papertongues666: Current CommonLibSSE-NG public headers require its PCH.
+#include <SKSE/Impl/PCH.h>
+
 // This file is required.
 
 #include "fmt/format.h"
