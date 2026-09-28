@@ -37,8 +37,33 @@ endif()
 # Otherwise, you can set OUTPUT_FOLDER to any place you'd like :)
 # set(OUTPUT_FOLDER "C:/path/to/any/folder")
 
+# Papertongues666: Use the extracted D: source tree locally; clean builds fetch
+# pinned v10.0.0. The vcpkg manifests list this version's direct build dependencies.
+include(FetchContent)
+# Papertongues666: CommonLib's unit tests are not part of this plugin build.
+set(BUILD_TESTS OFF CACHE BOOL "Disable CommonLibSSE-NG tests in this plugin build" FORCE)
+# Papertongues666: This plugin targets Skyrim SE/AE, not VR, so do not link OpenVR.
+set(ENABLE_SKYRIM_VR OFF CACHE BOOL "This plugin does not target Skyrim VR" FORCE)
+if(DEFINED COMMONLIB_SOURCE_DIR AND IS_DIRECTORY "${COMMONLIB_SOURCE_DIR}")
+    set(_commonlib_source_dir "${COMMONLIB_SOURCE_DIR}")
+    add_subdirectory("${COMMONLIB_SOURCE_DIR}" "${CMAKE_BINARY_DIR}/commonlib")
+else()
+    FetchContent_Declare(
+        commonlibsse_ng
+        GIT_REPOSITORY https://github.com/alandtse/CommonLibSSE-NG.git
+        GIT_TAG v10.0.0
+        GIT_SHALLOW TRUE
+    )
+    FetchContent_MakeAvailable(commonlibsse_ng)
+    set(_commonlib_source_dir "${commonlibsse_ng_SOURCE_DIR}")
+endif()
+
+# Papertongues666: The source-build path does not register this plugin helper itself.
+if(NOT COMMAND add_commonlibsse_plugin)
+    include("${_commonlib_source_dir}/cmake/CommonLibSSE.cmake")
+endif()
+
 # Setup your SKSE plugin as an SKSE plugin!
-find_package(CommonLibSSE CONFIG REQUIRED)
 add_commonlibsse_plugin(${PROJECT_NAME}
     SOURCES 
     src/main.cpp
